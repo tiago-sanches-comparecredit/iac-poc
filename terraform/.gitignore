@@ -3,6 +3,7 @@
 *.tfstate
 *.tfstate.*
 .terraform.lock.hcl
+states/
 
 # Secrets - NEVER commit these
 terraform.tfvars
