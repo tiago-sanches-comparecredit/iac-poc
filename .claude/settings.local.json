@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: add vertical landing page template with Sanity CMS integration\n\n- Add reusable components (Header, Hero, Features, Footer)\n- Add site configuration via environment variables\n- Add Sanity CMS client and queries\n- Support dynamic branding (colors, site name)\n- Content (hero, features) managed via Sanity CMS\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git branch:*)",
+      "Bash(git push:*)"
+    ]
+  }
+}
