@@ -89,6 +89,12 @@ variable "vercel_team_id" {
   default     = null
 }
 
+variable "github_repo" {
+  description = "GitHub repository in format 'owner/repo'"
+  type        = string
+  default     = "tiago-sanches-comparecredit/iac-poc"
+}
+
 # -----------------------------------------------------------------------------
 # Locals
 # -----------------------------------------------------------------------------
@@ -110,6 +116,12 @@ resource "vercel_project" "vertical" {
   framework = "nextjs"
   team_id   = var.vercel_team_id
 
+  git_repository = {
+    type = "github"
+    repo = var.github_repo
+  }
+
+  root_directory   = "nextjs-template"
   build_command    = "npm run build"
   output_directory = ".next"
   install_command  = "npm install"
@@ -165,6 +177,17 @@ resource "vercel_project_environment_variable" "sanity_dataset" {
   key        = "NEXT_PUBLIC_SANITY_DATASET"
   value      = var.sanity_dataset
   target     = ["production", "preview", "development"]
+}
+
+# -----------------------------------------------------------------------------
+# Trigger initial deployment
+# -----------------------------------------------------------------------------
+
+resource "vercel_deployment" "initial" {
+  project_id = vercel_project.vertical.id
+  team_id    = var.vercel_team_id
+  ref        = "main"
+  production = true
 }
 
 # -----------------------------------------------------------------------------
