@@ -37,28 +37,23 @@ iac-poc/
 ├── nextjs-template/          # Next.js landing page template
 │   ├── src/
 │   │   ├── app/              # App Router pages
-│   │   ├── components/       # React components (Header, Hero, Features, Footer)
+│   │   ├── components/       # React components (Header, Hero, ProductList, Footer)
 │   │   ├── config/           # Site configuration from env vars
 │   │   └── lib/              # Sanity client and queries
-│   └── .env.example          # Environment variables template
+│   └── .env.local            # Environment variables (not committed)
 │
 ├── sanity-cms/               # Sanity Studio template
-│   ├── schemas/              # Content schemas (heroSection, feature)
+│   ├── schemas/              # Content schemas (settings, home, product)
 │   ├── sanity.config.ts      # Studio configuration
 │   └── .env.example          # CMS environment variables
 │
 ├── terraform/                # Infrastructure as Code
 │   ├── main.tf               # Main Terraform configuration
-│   ├── sanity.tf             # Sanity project provisioning
-│   ├── variables.tfvars.example
-│   └── verticals/            # Pre-configured vertical settings
-│       ├── pet-insurance.tfvars
-│       ├── auto-loans.tfvars
-│       └── debt-relief.tfvars
+│   ├── terraform.tfvars.example
+│   └── states/               # State files per vertical (not committed)
 │
 └── scripts/                  # Helper scripts
-    ├── create-vertical.sh    # One-command vertical creation
-    └── setup-sanity.sh       # Sanity project setup
+    └── create-vertical.sh    # Automated vertical creation
 ```
 
 ## Prerequisites
@@ -100,26 +95,46 @@ Get your tokens:
 
 ### 3. Create a New Vertical
 
-**Option A: Using the helper script**
+**Step 1:** Create a Sanity project manually at https://www.sanity.io/manage and copy the project ID.
+
+**Step 2:** Run the create-vertical script:
+
 ```bash
-cd scripts
-./create-vertical.sh pet-insurance
+# Preview what will be created (dry run)
+./scripts/create-vertical.sh --name "car-insurance" --sanity-project-id "your-project-id" --dry-run
+
+# Create the vertical
+./scripts/create-vertical.sh --name "car-insurance" --sanity-project-id "your-project-id"
+
+# With custom branding
+./scripts/create-vertical.sh \
+  --name "car-insurance" \
+  --sanity-project-id "your-project-id" \
+  --display-name "Car Insurance" \
+  --primary-color "#10b981"
 ```
 
-**Option B: Using Terraform directly**
-```bash
-cd terraform
-terraform init
-terraform plan -var="vertical_name=pet-insurance"
-terraform apply -var="vertical_name=pet-insurance"
-```
+**What the script does:**
+1. Creates Sanity datasets (`production` and `staging`)
+2. Deploys Sanity Studio to `{vertical}-cms.sanity.studio`
+3. Creates Vercel project via Terraform
+4. Configures all environment variables
 
-**Option C: Using a pre-configured vertical**
-```bash
-cd terraform
-terraform init
-terraform apply -var-file="verticals/pet-insurance.tfvars"
-```
+**Script options:**
+| Option | Description |
+|--------|-------------|
+| `--name` | Vertical name (required, e.g., car-insurance) |
+| `--sanity-project-id` | Sanity project ID (required) |
+| `--display-name` | Display name (optional, auto-generated) |
+| `--primary-color` | Brand color (optional, default: #3b82f6) |
+| `--skip-sanity` | Skip Sanity setup |
+| `--skip-vercel` | Skip Vercel setup |
+| `--dry-run` | Preview without executing |
+
+**Step 3:** Connect the GitHub repo to the new Vercel project:
+1. Go to https://vercel.com/{vertical-name}-landing/settings/git
+2. Connect the `iac-poc` repository
+3. Set Root Directory to `nextjs-template`
 
 ## Customizing a Vertical
 
@@ -176,17 +191,24 @@ SANITY_STUDIO_PROJECT_ID=your-project-id npm run deploy
 
 ### 3. Content Schemas
 
-**Hero Section:**
-- title (string)
-- subtitle (text)
+**Settings (singleton):**
+- siteName (string)
+- logo (image, optional)
+- logoAlt (string)
+
+**Home (singleton):**
+- title (string) - Hero title
+- subtitle (text) - Hero subtitle
 - ctaText (string)
 - ctaLink (string)
-- backgroundImage (image, optional)
 
-**Feature:**
-- title (string)
-- description (text)
-- icon (string/emoji)
+**Product:**
+- name (string)
+- slug (slug)
+- image (image, optional)
+- details (array of strings) - Bullet points
+- ctaText (string)
+- ctaLink (string)
 - order (number)
 
 ## Development
